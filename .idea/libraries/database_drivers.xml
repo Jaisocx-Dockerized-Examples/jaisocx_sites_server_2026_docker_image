@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="database-drivers">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/software/jaisocx-http/database-drivers/postgresql-42.5.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/software/jaisocx-http/database-drivers/mysql-connector-j-8.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/software/jaisocx-http/database-drivers/ojdbc10-19.16.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/software/jaisocx-http/database-drivers/sqlite-jdbc-3.40.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/software/jaisocx-http/database-drivers/mssql-jdbc-11.2.1.jre11.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

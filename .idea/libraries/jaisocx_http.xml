@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jaisocx-http">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/software/jaisocx-http/out/artifacts/jaisocx_http_jar/jaisocx-http.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

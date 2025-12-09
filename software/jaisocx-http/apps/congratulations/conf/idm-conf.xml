@@ -1,0 +1,18 @@
+<conf-idm>
+  <user id="admin" password="password" granted-roles="ADMIN" />
+  
+  <role id="READER">
+    <!-- with docker, here should be the port, set in the http-conf.xml (:80), and not the outer docker container port (:2291) -->
+    <granted-alias url="localhost:80/" methods="GET"></granted-alias>
+  </role>
+  <role id="ADD" granted-roles="READER">
+    <granted-alias url="localhost:80/" methods="POST"></granted-alias>
+  </role>
+  <role id="REMOVE" granted-roles="READER">
+    <granted-alias url="localhost:80/" methods="DELETE"></granted-alias>
+  </role>
+  <role id="EDITOR" granted-roles="ADD,REMOVE">
+    <granted-alias url="localhost:80/" methods="PUT,PATCH"></granted-alias>
+  </role>
+  <role id="ADMIN" granted-roles="EDITOR"></role>
+</conf-idm>

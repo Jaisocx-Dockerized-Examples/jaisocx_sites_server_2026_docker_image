@@ -1,0 +1,556 @@
+FROM alpine:3.21.3
+
+USER root
+
+
+## shows the echo lines when building this image
+RUN set -x
+
+## allows usage of instruction "source <file>" and later ARG variables from the imported file
+RUN set -a
+
+
+
+
+### --------------------------
+### grants in docker on filesystem 
+#### This umask (027) balances security and usability:
+#### Directories: 750 (rwxr-x---)
+#### Files: 640 (rw-r-----)
+### ==========================
+RUN echo -e "\umask 027\n\n\n" >> "/etc/profile"
+
+
+
+
+
+
+ARG const_sh_file_first_line="#!/usr/bin/env sh"
+
+### path to .env settings file
+ARG SRC_ENV_FILE_PATH="./.env"
+
+## create local image filesystem folder for copy files reusable block
+ARG LOCAL_IMAGE_SETTINGS_FOLDER_PATH="/etc/jaisocx_testimage"
+ARG LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH="${LOCAL_IMAGE_SETTINGS_FOLDER_PATH}/env"
+
+
+RUN mkdir -p "${LOCAL_IMAGE_SETTINGS_FOLDER_PATH}"
+RUN mkdir -p "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}"
+
+
+RUN chmod -R u+rwx "${LOCAL_IMAGE_SETTINGS_FOLDER_PATH}"
+RUN chmod -R go-rwx "${LOCAL_IMAGE_SETTINGS_FOLDER_PATH}"
+
+RUN chmod -R u+rwx "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}"
+RUN chmod -R go-rwx "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}"
+
+
+
+ARG LOCAL_ENV_LIKE_TMP_FILE_PATH="${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env.tmp"
+RUN touch "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+RUN chmod a+rwx "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+RUN chmod go-rwx "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+
+
+
+# RUN echo "${const_sh_file_first_line}" > "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+# RUN echo "# The test .env.tmp.sh file" >> "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+RUN echo "test_var_dfndjknsjknjdks=true" >> "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+# RUN echo -e "\n\n" >> "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+
+
+RUN echo "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+RUN ls -lahrts "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+RUN cat "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+
+
+
+
+
+
+
+
+
+
+## copy file reusable block
+COPY "${SRC_ENV_FILE_PATH}" "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+
+RUN chmod u+rx "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+RUN chmod u-w "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+RUN chmod go-rwx "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+
+# preview after copy and grantied access
+RUN ls -lahrts "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+RUN cat "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+
+
+
+
+
+
+### --------------------------
+### Build time DOCKER BUILDX BUILD --build-arg USER_NAME="${USER_NAME}" ASSIGNED ENVIRONMENT VARIABLES from .env 
+### ==========================
+
+ARG ROOT_HASHED_PWD
+
+ARG GROUP_SUDIERS_ID
+ARG GROUP_SUDIERS_NAME
+
+ARG GROUP_USERS_ID
+ARG GROUP_USERS_NAME
+
+ARG USER_SUDIER_ID
+ARG USER_SUDIER_NAME
+ARG USER_SUDIER_HASHED_PWD
+
+ARG USER_ID
+ARG USER_NAME
+
+ARG LOGGED_IN_USERNAME
+
+ARG VOLUME_PATH
+
+RUN echo -e "VOLUME_PATH: ${VOLUME_PATH}\n"
+
+
+### --------------------------
+### Build time ASSIGNED ENVIRONMENT VARIABLES from .env 
+### IN EOF HEREDOC BLOCK
+### ==========================
+### The workaround to get .env variables in Dockerfile, when not set in the payload of docker buildx build command.
+RUN <<EOF
+  set -a
+  source "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+
+  # here the variable is accessible, can be used in the script
+  echo "${TESTED_VAR}"
+EOF
+
+
+
+
+
+
+### --------------------------
+### INSTALLL PACKAGES WHEN SET IN .env
+### ==========================
+# RUN apk add bash
+# RUN apk add shadow
+RUN apk add sudo
+# RUN apk add curl
+
+
+
+
+### --------------------------
+### paths on host machine ssd drive
+### ==========================
+ARG SRC_SCRIPTS_PATH="./.command/docker"
+ARG SRC_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH="${SRC_SCRIPTS_PATH}/multiplatform"
+ARG SRC_ALPINE_MULTIPLATFORM_FUNCS_PATH="${SRC_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH}/alpine_url.sh"
+ARG SRC_GET_ENV_VAR_FUNC_PATH="${SRC_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH}/get_env_variable.sh"
+
+
+
+### --------------------------
+### paths in docker container's filesystem
+### ==========================
+ARG LOCAL_IMAGE_SCRIPTS_FOLDER_PATH="${LOCAL_IMAGE_SETTINGS_FOLDER_PATH}/scripts"
+ARG LOCAL_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH="${LOCAL_IMAGE_SCRIPTS_FOLDER_PATH}/multiplatform"
+ARG LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH="${LOCAL_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH}/alpine_url.sh"
+ARG LOCAL_GET_ENV_VAR_FUNC_PATH="${LOCAL_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH}/get_env_variable.sh"
+
+
+RUN mkdir -p "${LOCAL_IMAGE_SCRIPTS_FOLDER_PATH}"
+RUN chmod u+rwx "${LOCAL_IMAGE_SETTINGS_FOLDER_PATH}"
+RUN chmod go-rwx "${LOCAL_IMAGE_SETTINGS_FOLDER_PATH}"
+
+
+RUN mkdir -p "${LOCAL_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH}"
+RUN chmod u+rwx "${LOCAL_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH}"
+RUN chmod go-rwx "${LOCAL_IMAGE_SCRIPTS_ALPINE_MULTIPLATFORM_FOLDER_PATH}"
+
+
+COPY "${SRC_ALPINE_MULTIPLATFORM_FUNCS_PATH}" "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+RUN chmod u+rx "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+RUN chmod u-w "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+RUN chmod go-rwx "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+
+# preview after copy and grantied access
+RUN ls -lahrts "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+RUN cat "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+
+
+COPY "${SRC_GET_ENV_VAR_FUNC_PATH}" "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+RUN chmod u+rx "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+RUN chmod u-w "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+RUN chmod go-rwx "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+
+# preview after copy and grantied access
+RUN ls -lahrts "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+RUN cat "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+
+
+
+
+### --------------------------
+### IMPORTING FUNCTIONS
+### ==========================
+RUN source "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+# RUN source "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+
+
+
+
+### --------------------------
+### IMPORTING ENVIRONMENT VARIABLES from .env 
+### ==========================
+
+RUN <<EOF
+  source "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+
+  TESTED_VAR="undefined"
+  TESTED_VAR="$(env_variable "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env" "TESTED_VAR")"
+  echo "1. env_variable() => invoked inside heredoc block: TESTED_VAR: ${TESTED_VAR}"
+
+  TESTED_VAR="undefined"
+  set -a
+  source "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env"
+  echo "2. invoked inside heredoc block: TESTED_VAR: ${TESTED_VAR}"
+EOF
+
+
+
+
+
+
+### --------------------------
+### mapping a volume reusable block
+### ==========================
+
+### TESTED
+##### 1. DONE: this volume is mapped to the host machine
+
+RUN mkdir -p "${VOLUME_PATH}"
+RUN chmod u+rwx "${VOLUME_PATH}"
+VOLUME [ "./data", "${VOLUME_PATH}" ]
+
+### TESTED
+##### 2. TESTED SUGGESTION FAIL: did not write the file, nor on docker image build, neither when docker compose up.
+RUN echo "Hu hu, it's me" > "${VOLUME_PATH}/test_volume_mapped.txt"
+
+
+
+
+
+
+### --------------------------
+### adding users and groups
+### ==========================
+
+RUN addgroup -g ${GROUP_SUDIERS_ID} ${GROUP_SUDIERS_NAME}
+RUN addgroup -g ${GROUP_USERS_ID} ${GROUP_USERS_NAME}
+
+RUN adduser -u ${USER_SUDIER_ID} -G ${GROUP_SUDIERS_NAME} -D ${USER_SUDIER_NAME}
+RUN adduser -u ${USER_ID} -G ${GROUP_USERS_NAME} -D ${USER_NAME}
+
+
+
+
+### --------------------------
+### SUDIERS USERS AND GROUPS 
+### ==========================
+
+ARG sudoers_file_name="/etc/sudoers.d/${GROUP_SUDIERS_NAME}"
+##### USE BASH FUNC ARRAY JOIN()
+# ARG echo_lines = ( "\n" "# The custom group in this test image" "\n" "%${GROUP_SUDIERS_NAME} ALL=(ALL) ALL" "\n" )
+RUN echo -e "\n# The custom group in this test image\n%${GROUP_SUDIERS_NAME} ALL=(ALL) ALL\n" >> "${sudoers_file_name}"
+
+### GRANTED INVOKE COMMANDS e.g. java, rc-service, apk
+##### NOT TESTED
+##### USE BASH FUNC ARRAY JOIN()
+# ARG echo_lines = ( "%${GROUP_SUDIERS_NAME} ALL=" "/usr/bin/less" ", " "/usr/bin/apt" "\n" )
+# RUN echo -e "%${GROUP_SUDIERS_NAME} ALL=/usr/bin/less, /usr/bin/apt" >> "${sudoers_file_name}"
+
+RUN chmod 440 "${sudoers_file_name}"
+
+
+
+
+### --------------------------
+### sudoers users passwords
+### lib shadow
+### ==========================
+
+# RUN echo "root:${ROOT_HASHED_PWD}" | chpasswd -e
+# RUN echo "${USER_SUDIER_NAME}:${USER_SUDIER_HASHED_PWD}" | chpasswd -e
+# RUN echo "${USER_SUDIER_NAME}:${USER_SUDIER_PWD}" | chpasswd
+
+
+
+
+
+
+
+### --------------------------
+### MULTIPLATFORM BUILD BY DOCKER BUILDX
+### ==========================
+
+# Capture the host machine architecture
+ARG BUILDPLATFORM
+ARG BUILDOS
+ARG BUILDARCH
+
+# Capture the target architecture
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+ARG ECHO_LINE="Building under host machine platform: ${BUILDPLATFORM} ${BUILDOS} ${BUILDARCH}, for the target architecture: ${TARGETPLATFORM} ${TARGETOS} ${TARGETARCH}"
+
+RUN echo -e "${ECHO_LINE}\n"
+
+
+
+### --------------------------
+### ACCORDING TO ARCHITECTURE, INSTALL LIBRARIES
+### ==========================
+
+### --------------------------
+### get Alpine Community Repo url
+### ==========================
+
+
+##### NOT TESTED
+##### IN DEVELOPMENT
+
+RUN <<EOF
+  source "${LOCAL_ALPINE_MULTIPLATFORM_FUNC_PATH}"
+  ALPINE_COMMUNITY_URL="$(get_alpine_url "${TARGETPLATFORM}")"
+  ALPINE_COMMUNITY_RELEASE_URL="https://dl-cdn.alpinelinux.org/alpine/v3.21/community/${ALPINE_COMMUNITY_URL}"
+
+  echo "ALPINE_COMMUNITY_URL=\""${ALPINE_COMMUNITY_URL}"\"" >> "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+  echo "ALPINE_COMMUNITY_RELEASE_URL=\""${ALPINE_COMMUNITY_RELEASE_URL}"\"" >> "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+
+  echo "get_alpine_url() => ALPINE_COMMUNITY_URL="${ALPINE_COMMUNITY_URL}""
+EOF
+
+
+
+RUN <<EOF
+
+  set -a
+  source "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"
+
+  echo "1. ALPINE_COMMUNITY_URL: ${ALPINE_COMMUNITY_URL}"
+  echo "2. ALPINE_COMMUNITY_RELEASE_URL: ${ALPINE_COMMUNITY_RELEASE_URL}"
+
+EOF
+
+
+
+
+# RUN <<EOF
+
+#   source "${LOCAL_GET_ENV_VAR_FUNC_PATH}"
+
+#   TESTED_VAR="$(env_variable "${LOCAL_IMAGE_SETTINGS_ENV_FOLDER_PATH}/.env" "TESTED_VAR")"
+#   ALPINE_COMMUNITY_URL="$(env_variable "${LOCAL_ENV_LIKE_TMP_FILE_PATH}" "ALPINE_COMMUNITY_URL")"
+#   ALPINE_COMMUNITY_RELEASE_URL="$(env_variable "${LOCAL_ENV_LIKE_TMP_FILE_PATH}" "ALPINE_COMMUNITY_RELEASE_URL")"
+
+#   echo "2. invoked inside heredoc block: TESTED_VAR: ${TESTED_VAR}"
+#   echo "2. invoked inside heredoc block: ALPINE_COMMUNITY_URL: ${ALPINE_COMMUNITY_URL}"
+#   echo "2. invoked inside heredoc block: ALPINE_COMMUNITY_RELEASE_URL: ${ALPINE_COMMUNITY_RELEASE_URL}"
+  
+# EOF
+
+
+
+### --------------------------
+### Install based on architecture
+### INSTALL JAVA
+### ==========================
+
+
+##### NOT TESTED
+
+
+# RUN apk add openjdk21-jre --repository="${ALPINE_COMMUNITY_RELEASE_URL}"
+
+# RUN apk add openjdk21-jre --repository="${ALPINE_COMMUNITY_RELEASE_URL}" || \
+#     (echo "No suitable OpenJDK21-JRE version found for ${TARGETPLATFORM} on Alpine url community/${ALPINE_COMMUNITY_URL}" && exit 1)
+
+
+
+
+### --------------------------
+### Install based on architecture
+### INSTALL NVM, NODE, NPM, YARN
+### ==========================
+
+### --------------------------
+### Install based on architecture
+### 1. INSTALL NVM
+### ==========================
+
+##### NOT TESTED
+
+# RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+
+# ENV NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+
+
+
+
+### --------------------------
+### testing dockerfile 1.2.3. if condition multiline, writing variables to a temp key:value pairs lines env-like file.
+### ==========================
+
+
+ARG test_name="testing dockerfile 1.2.3. if condition multiline, writing variables to a temp key:value pairs lines env-like file."
+ARG var_payload_true="if condition true"
+ARG var_payload_else="else block in if condition"
+ARG var_type_env_payload="assigned via ENV declaration"
+ARG var_type_arg_payload="assigned via ARG declaration"
+
+
+ARG TESTING_IF_CONDITION_MULTILIE_VAR="true"
+RUN echo "TESTING_IF_CONDITION_MULTILIE_VAR: ${TESTING_IF_CONDITION_MULTILIE_VAR}"
+
+RUN <<EOF
+  if [ "${TESTING_IF_CONDITION_MULTILIE_VAR}" = "true" ]; then
+    echo "${test_name}, ${var_payload_true}"; 
+    test_variable="${test_name}, ${var_payload_true} ${var_type_env_payload}"; 
+    keyvalue_pair="test_variable=\""${test_variable}"\""; 
+    echo "${keyvalue_pair}" >> "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"; 
+  else 
+    echo "${test_name}, ${var_payload_else}"; 
+    test_variable="${test_name}, ${var_payload_else} ${var_type_arg_payload}"; 
+    keyvalue_pair="test_variable=\""${test_variable}"\""; 
+    echo "${keyvalue_pair}" >> "${LOCAL_ENV_LIKE_TMP_FILE_PATH}";
+  fi
+EOF
+
+
+
+RUN cat "${LOCAL_ENV_LIKE_TMP_FILE_PATH}"  
+
+RUN <<EOF
+  set -a;
+  source "${LOCAL_ENV_LIKE_TMP_FILE_PATH}";
+
+  # here the variable is accessible, can be used in the script
+  echo "test_variable: ${test_variable}";
+EOF
+
+
+
+
+
+
+### --------------------------
+### testing dockerfile 1.2. if condition miltilie
+### ==========================
+### TESTED
+##### 1. DONE: this way of writing if conditions works well in Dockerfile
+##### 2. TESTED SUGGESTION FAIL: a variable set in RUN statement multiline, can not be accessed beyond the OF block.
+
+ENV TESTING_IF_CONDITION_MULTILIE_VAR="true"
+
+RUN if [ "${TESTING_IF_CONDITION_MULTILIE_VAR}" = "true" ]; then \
+    echo "test 1.2. if condition miltilie, line 1"; \
+    echo "test 1.2. if condition miltilie, line 2"; \
+    echo "test 1.2. if condition miltilie, line 3"; \
+  else \
+    echo "test 1.2. else block in if condition miltilie, line 1"; \
+    echo "test 1.2. else block in if condition miltilie, line 2"; \
+    echo "test 1.2. else block in if condition miltilie, line 3"; \
+fi
+
+
+
+### --------------------------
+### testing dockerfile 2.2. heredoc blocks padded lines on lines start
+### ==========================
+### TESTED
+# RUN <<EOF
+#   echo "test 2.2. heredoc blocks padded lines on lines start, line 1" 
+#   echo "test 2.2. heredoc blocks padded lines on lines start, line 2"
+#   echo "test 2.2. heredoc blocks padded lines on lines start, line 3"
+#   echo "test 2.2. heredoc blocks padded lines on lines start, line 4"
+#   echo "test 2.2. heredoc blocks padded lines on lines start, line 5"
+# EOF
+
+
+### --------------------------
+### testing dockerfile 2.3. if condition multiline in heredoc blocks
+### ==========================
+### TESTED
+##### 1. DONE: this way of writing if conditions works well in Dockerfile
+##### 2. TESTED SUGGESTION FAIL: a variable set in RUN statement multiline, can not be accessed beyond the OF block.
+
+# ENV TESTING_IF_CONDITION_MULTILIE_HEREDOC_BLOCK_VAR="true"
+
+# RUN <<EOF
+#   if [ "${TESTING_IF_CONDITION_MULTILIE_HEREDOC_BLOCK_VAR}" = "true" ]; then
+#     echo "test 2.3. if condition multiline in heredoc blocks, line 1";
+#     echo "test 2.3. if condition multiline in heredoc blocks, line 2";
+#     echo "test 2.3. if condition multiline in heredoc blocks, line 3";
+#   else 
+#     echo "test 2.3. else block in if condition multiline in heredoc blocks, line 1";
+#     echo "test 2.3. else block in if condition multiline in heredoc blocks, line 2";
+#     echo "test 2.3. else block in if condition multiline in heredoc blocks, line 3";
+#   fi
+# EOF
+
+
+
+### --------------------------
+### testing dockerfile 2.4. if condition multiline in heredoc blocks lines ends backslashes
+### ==========================
+### TESTED
+##### 1. DONE: this way of writing if conditions works well in Dockerfile
+##### 2. TESTED SUGGESTION FAIL: a variable set in RUN statement multiline, can not be accessed beyond the OF block.
+
+# ENV TESTING_IF_CONDITION_MULTILIE_HEREDOC_BLOCK_LINES_ENDS_WITH_BACKSLASHES_VAR="true"
+
+# RUN <<EOF
+#   if [ "${TESTING_IF_CONDITION_MULTILIE_HEREDOC_BLOCK_LINES_ENDS_WITH_BACKSLASHES_VAR}" = "true" ]; then \
+#     echo "test 2.4. if condition multiline in heredoc blocks lines ends backslashes, line 1"; \
+#     echo "test 2.4. if condition multiline in heredoc blocks lines ends backslashes, line 2"; \
+#     echo "test 2.4. if condition multiline in heredoc blocks lines ends backslashes, line 3"; \
+#   else \
+#     echo "test 2.4. else block in if condition multiline in heredoc blocks lines ends backslashes, line 1"; \
+#     echo "test 2.4. else block in if condition multiline in heredoc blocks lines ends backslashes, line 2"; \
+#     echo "test 2.4. else block in if condition multiline in heredoc blocks lines ends backslashes, line 3"; \
+#   fi
+# EOF
+
+
+
+
+
+### --------------------------
+### THE FINAL DOCKERIZED SERVICE SETTINGS
+### ==========================
+
+WORKDIR "${VOLUME_PATH}"
+USER "${LOGGED_IN_USERNAME}"
+
+RUN set +xa
+
+
+
+
+
+### --------------------------
+### START OF THE DOCKERIZED SERVICE 
+### ==========================
+
+### the placeholder here, this is no good)) rather a service to start in the foreground
+CMD [ "tail", "-f", "/dev/null" ]
+
+

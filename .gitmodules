@@ -1,0 +1,3 @@
+[submodule "docker/buildx_env_lib/env_miniobjects"]
+	path = docker/buildx_env_lib/env_miniobjects
+	url = https://version.jaisocx.com:2465/BashPackages/env_miniobjects.git

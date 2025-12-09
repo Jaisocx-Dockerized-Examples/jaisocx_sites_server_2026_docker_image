@@ -1,0 +1,11 @@
+#!/sbin/openrc-run
+
+### /etc/init.d/<service_name>
+
+name="Jaisocx Sites Server"
+description="Serves Endpoints to deliver Sites contents to Browsers and Networking Clients"
+command="/usr/bin/<service_name>/cmd-linux/server-run.sh"
+command_user="${USER_SUDIER_NAME}"
+command_background="true"
+pidfile="/run/<service_name>.pid"
+

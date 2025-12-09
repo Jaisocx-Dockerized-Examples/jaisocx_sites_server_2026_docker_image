@@ -1,0 +1,23 @@
+[Unit]
+Description=JAISOCX Web Server
+[Service]
+User=root
+# The configuration file application.properties should be here:
+
+Type=simple
+
+#change this to your workspace
+WorkingDirectory=/home/illia/Documents/JAISOCX/JAISOCX/cmd-linux
+
+#path to executable.
+#executable is a bash script which calls jar file
+ExecStart=/bin/bash ./server-run.sh
+
+SuccessExitStatus=143
+TimeoutStopSec=10
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

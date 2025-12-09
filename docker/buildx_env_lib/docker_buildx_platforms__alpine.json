@@ -1,0 +1,43 @@
+[
+    {
+        "model": "Intel and AMD",
+        "name": "x86_64",
+        "platform": "linux/amd64"
+    },
+    {
+        "model": "Raspberry Pi 4+ and Apple Silicon",
+        "name": "arm64",
+        "platform": "linux/arm64/v8"
+    },
+    {
+        "model": "Raspberry Pi Zero",
+        "name": "ARMv6",
+        "platform": "linux/arm/v6"
+    },
+    {
+        "model": "Raspberry Pi 3",
+        "name": "ARMv7",
+        "platform": "linux/arm/v7"
+    },
+    {
+        "model": "32-bit",
+        "name": "x86",
+        "platform": "linux/386"
+    },
+    {
+        "model": "PowerPC 64 LE",
+        "name": "ppc64le",
+        "platform": "linux/ppc64le"
+    },
+    {
+        "model": "RISC-V 64-bit",
+        "name": "riscv64",
+        "platform": "linux/riscv64"
+    },
+    {
+        "model": "IBM Z",
+        "name": "s390x",
+        "platform": "linux/s390x"
+    }
+]
+

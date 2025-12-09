@@ -1,0 +1,36 @@
+services:
+  app_via_image:
+    image: "jaisocx/webserver:3.2.1-alpine-3.21.3"
+    build:
+      args:
+        JSC_IMAGE_NAME: "${JSC_IMAGE_NAME}"
+        JSC_IMAGE_SERVICE_NAME: "${JSC_IMAGE_SERVICE_NAME}"
+        TIME_ZONE: "${TIME_ZONE}"
+        GROUP_SUDIERS_ID: "${GROUP_SUDIERS_ID}"
+        GROUP_SUDIERS_NAME: "${GROUP_SUDIERS_NAME}"
+        GROUP_USERS_ID: "${GROUP_USERS_ID}"
+        GROUP_USERS_NAME: "${GROUP_USERS_NAME}"
+        USER_SUDIER_ID: "${USER_SUDIER_ID}"
+        USER_SUDIER_NAME: "${USER_SUDIER_NAME}"
+        USER_ID: "${USER_ID}"
+        USER_NAME: "${USER_NAME}"
+        LOGGED_IN_USERNAME: "${LOGGED_IN_USERNAME}"
+        VOLUME_PATH: "${VOLUME_PATH}"
+    volumes:
+      - "./software/jaisocx-http/:/usr/lib/jaisocx-http/:delegated"
+      - "./data/:${VOLUME_PATH}/${JSC_IMAGE_NAME}/:delegated"
+      - "./log/:/var/log/${JSC_IMAGE_NAME}/:delegated"
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - sandbox_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  sandbox_network:
+    driver: bridge
+
+
+

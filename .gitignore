@@ -1,0 +1,11 @@
+/.env
+
+/temp/
+/.DS_Store
+
+/software/jaisocx-http/docker/update_entrypoint.sh
+/temp/
+/software/jaisocx-http/database-drivers/
+/software/jaisocx-http/logs/
+/log/
+

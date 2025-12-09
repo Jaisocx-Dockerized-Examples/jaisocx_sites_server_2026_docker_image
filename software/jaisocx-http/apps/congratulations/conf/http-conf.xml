@@ -1,0 +1,57 @@
+<conf>
+    <conf-idm path="apps/congratulations/conf/idm-conf.xml"/>
+    <conf-http>
+        <servers>
+            <server port="443" alternative-port="2288" secure="true">
+                <domain
+                    name="example-dockerized.brightday.email"
+                    jks-path="ssl/brightday.email.jks"
+                    jks-alias="brightday.email"
+                    jks-passphrase="JW5MYPKHbdqetvr4yfshiFwwjvr4fakE43qJUtgh7A2hNEW">
+                    <alias art="folder"
+                       url="/"
+                       path="apps/congratulations/www/"
+                       cache="update"
+                       cache-except="php"
+                       list="true"
+                       each-folder-content-file-name="index.html"/>
+                    <alias art="folder"
+                       url="/site1/"
+                       path="/var/data/jsc_image/site1/"
+                       cache="update"
+                       cache-except="php"
+                       list="true"
+                       each-folder-content-file-name="index.html"/>
+                    <alias art="folder"
+                       url="/site23456/"
+                       path="/var/data/jsc_image/site2/"
+                       cache="update"
+                       cache-except="php"
+                       list="true"
+                       each-folder-content-file-name="index.html"/>
+                </domain>
+            </server>
+            <server port="80" alternative-port="2289" secure="false">
+                <domain
+                    name="localhost"
+                >
+                    <alias art="folder"
+                       url="/"
+                       path="apps/congratulations/www/"
+                       cache="cache"
+                       cache-except="php"
+                       list="true"
+                       each-folder-content-file-name="index.html"/>
+                </domain>
+                <domain
+                    name="example-dockerized.brightday.email"
+                >
+                    <alias art="redirection"
+                       url="/${any}"
+                       path="https://example-dockerized.brightday.email/"
+                    />
+                </domain>
+            </server>
+        </servers>
+    </conf-http>
+</conf>
